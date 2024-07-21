@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, redirect, render_template_string
 import mysql.connector
 from mysql.connector import Error
 
@@ -20,13 +20,13 @@ def db_connection():
 # Default route for sign-in
 @app.route('/', methods=['GET'])
 def home():
-    return render_template('signin.html')
+    # Pass an empty error message initially
+    return render_template('signin.html', error='')
 
-# Route to handle sign-in
 @app.route('/login', methods=['POST'])
 def login():
     username = request.form['username']
-    password = request.form['password']  # Note: Password should be hashed
+    password = request.form['password']  # Remember to hash the password in production
 
     conn = db_connection()
     cursor = conn.cursor()
@@ -34,12 +34,15 @@ def login():
         cursor.execute('SELECT password FROM Users WHERE username = %s', (username,))
         record = cursor.fetchone()
         if record and record[0] == password:
-            return 'Login successful!'  # Redirect to another page or dashboard
+            return 'Login successful!'  # Ideally redirect to a different page
         else:
-            return 'Login failed! Invalid username or password.'
+            # Pass an error message to the sign-in template
+            error = "Incorrect login, Please check your login info and try again!"
+            return render_template('signin.html', error=error)
     except Error as e:
         print(e)
-        return 'Error occurred during login'
+        error = "Error occurred during login"
+        return render_template('signin.html', error=error)
     finally:
         cursor.close()
         conn.close()
@@ -60,7 +63,8 @@ def register_user():
 
     confirm_password = request.form['confirm_password']
     if password != confirm_password:
-        return "Passwords do not match, please try again."
+            error = "Passwords do not match, Please Try Again!"
+            return render_template('registration.html', error=error)
 
     conn = db_connection()
     cursor = conn.cursor()
