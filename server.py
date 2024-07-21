@@ -49,5 +49,34 @@ def login():
 def register():
     return render_template('registration.html')
 
+# Route to handle the form submission
+@app.route('/register_user', methods=['POST'])
+def register_user():
+    username = request.form['username']
+    password = request.form['password']  # need to work on this, professor has a some document on this topic
+    firstName = request.form['firstName']
+    lastName = request.form['lastName']
+    email = request.form['email']
+
+    confirm_password = request.form['confirm_password']
+    if password != confirm_password:
+        return "Passwords do not match, please try again."
+
+    conn = db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO Users (username, password, firstName, lastName, email)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', (username, password, firstName, lastName, email))
+        conn.commit()
+        return 'User registered successfully!'
+    except Error as e:
+        print(e)
+        return 'Error occurred'
+    finally:
+        cursor.close()
+        conn.close()
+
 if __name__ == '__main__':
     app.run(debug=True)
