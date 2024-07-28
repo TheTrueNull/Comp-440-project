@@ -1,6 +1,6 @@
 #Comp 488- Phase 1
-#by: Edward Orlov, Pragya,
-#4 python libraries which are needed to install, run the following commands before executing the code:
+#by: Edward Orlov, Rucha Kothikar, Pragya Sangwan
+#3 python libraries which are needed to install, run the following commands before executing the code:
 #pip install flask 
 #pip install mysql-connector-python 
 #pip install bcrypt 
@@ -18,8 +18,8 @@ def db_connection():
         conn = mysql.connector.connect(
             host='localhost',        
             database='comp440db',
-            user='devuser', #this user only has insert and select permissions
-            password='liability'
+            user='devuser', #REPLACE THIS WITH YOUR NEWLY CREATED USERS INFORMATION
+            password='liability' #REPLACE THIS WITH YOUR NEWLY CREATED USERS INFORMATION
         )
     except Error as e:
         print(e)
