@@ -1,6 +1,6 @@
 #Comp 488- Phase 1
 #by: Edward Orlov, Rucha Kothikar, Pragya Sangwan
-#3 python libraries which are needed to install, run the following commands before executing the code:
+#3 python libraries are required to run the app, run the following commands before executing the code:
 #pip install flask 
 #pip install mysql-connector-python 
 #pip install bcrypt 
