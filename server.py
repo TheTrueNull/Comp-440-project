@@ -5,6 +5,7 @@
 #pip install mysql-connector-python 
 #pip install bcrypt 
 
+from datetime import date
 from flask import Flask, request, render_template, redirect, render_template_string
 import mysql.connector
 from mysql.connector import Error
@@ -42,7 +43,7 @@ def login():
         cursor.execute('SELECT password FROM Users WHERE username = %s', (username,))
         record = cursor.fetchone()
         if record and bcrypt.checkpw(password.encode(), record[0].encode()):
-            return 'Login successful!'
+            return render_template('userdash.html')
         else:
             error = "Incorrect login, please check your login info and try again!"
             return render_template('signin.html', error=error)
@@ -95,6 +96,83 @@ def register_user():
     except Error as e:
         print(e)
         return render_template('registration.html', error='Error occurred during registration.')
+    finally:
+        cursor.close()
+        conn.close()
+@app.route('/insert_item', methods=['POST'])
+def insert_item():
+    title = request.form['title']
+    description = request.form['description']
+    categories = request.form['categories']
+    price = request.form['price']
+    username = request.cookies.get('username')  # Assuming username is stored in cookies
+    today = date.today()
+
+    conn = db_connection()
+    cursor = conn.cursor()
+    # Check the number of items posted today
+    cursor.execute("SELECT COUNT(*) FROM Items WHERE username = %s AND datePosted = %s", (username, today))
+    count = cursor.fetchone()[0]
+    if count >= 2:
+        return "Limit reached: You can only post 2 items per day."
+
+    try:
+        cursor.execute("INSERT INTO Items (title, description, categories, price, username, datePosted) VALUES (%s, %s, %s, %s, %s, %s)",
+                       (title, description, categories, float(price), username, today))
+        conn.commit()
+        return "Item inserted successfully!"
+    except Error as e:
+        print(e)
+        return "Error occurred"
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/search_items', methods=['GET'])
+def search_items():
+    category = request.args.get('category')
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Items WHERE categories LIKE %s", ('%' + category + '%',))
+    items = cursor.fetchall()
+    return render_template('items.html', items=items)  # Assuming you have an items.html to display results
+
+@app.route('/submit_review', methods=['POST'])
+def submit_review():
+    itemID = request.form['itemID']
+    score = request.form['score']
+    remark = request.form['remark']
+    username = request.cookies.get('username')  # Assuming username is stored in cookies
+    today = date.today()
+
+    conn = db_connection()
+    cursor = conn.cursor()
+
+    # Check if the user owns the item
+    cursor.execute("SELECT username FROM Items WHERE itemID = %s", (itemID,))
+    owner = cursor.fetchone()
+    if owner[0] == username:
+        return "You cannot review your own items."
+
+    # Check the number of reviews today
+    cursor.execute("SELECT COUNT(*) FROM Reviews WHERE username = %s AND reviewDate = %s", (username, today))
+    count = cursor.fetchone()[0]
+    if count >= 3:
+        return "Limit reached: You can only submit 3 reviews per day."
+
+    # Check if the user has already reviewed this item
+    cursor.execute("SELECT * FROM Reviews WHERE itemID = %s AND username = %s", (itemID, username))
+    if cursor.fetchone():
+        return "You have already reviewed this item."
+
+    try:
+        cursor.execute("INSERT INTO Reviews (itemID, username, score, remark, reviewDate) VALUES (%s, %s, %s, %s, %s)",
+                       (itemID, username, score, remark, today))
+        conn.commit()
+        return "Review submitted successfully!"
+    except Error as e:
+        print(e)
+        return "Error occurred"
     finally:
         cursor.close()
         conn.close()

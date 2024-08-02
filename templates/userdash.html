@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+</head>
+<body>
+    <h1>User Dashboard</h1>
+
+    <!-- Form to insert an item -->
+    <h2>Insert an Item</h2>
+    <form action="/insert_item" method="post">
+        Title: <input type="text" name="title" required><br>
+        Description: <input type="text" name="description" required><br>
+        Category: <input type="text" name="categories" required><br>
+        Price: <input type="number" name="price" required><br>
+        <button type="submit">Add Item</button>
+    </form>
+
+    <!-- Form to search items by category -->
+    <h2>Search Items by Category</h2>
+    <form action="/search_items" method="get">
+        Category: <input type="text" name="category" required><br>
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Form to submit a review -->
+    <h2>Submit a Review</h2>
+    <form action="/submit_review" method="post">
+        Item ID: <input type="number" name="itemID" required><br>
+        Score: <select name="score" required>
+            <option value="Excellent">Excellent</option>
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Poor">Poor</option>
+        </select><br>
+        Remark: <input type="text" name="remark" required><br>
+        <button type="submit">Submit Review</button>
+    </form>
+</body>
+</html>
