@@ -12,11 +12,13 @@ CREATE TABLE Users (
 
 CREATE TABLE Items (
     itemID INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255),
     title VARCHAR(255),
     description TEXT,
     datePosted DATE,
     price DECIMAL(10,2),
-    categories VARCHAR(255)
+    categories VARCHAR(255),
+    FOREIGN KEY (username) REFERENCES Users(username)
 );
 
 

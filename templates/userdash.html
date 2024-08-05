@@ -18,6 +18,13 @@
         <button type="submit">Add Item</button>
     </form>
 
+    {% if request.args.get('success') == 'True' %}
+    <div style="color: green;">Item has been Added!</div>
+    {% endif %}
+	{% if item_error %}
+	<div style="color: red;">{{ item_error }}</div>
+	{% endif %}
+
     <!-- Form to search items by category -->
     <h2>Search Items by Category</h2>
     <form action="/search_items" method="get">
@@ -27,16 +34,26 @@
 
     <!-- Form to submit a review -->
     <h2>Submit a Review</h2>
-    <form action="/submit_review" method="post">
-        Item ID: <input type="number" name="itemID" required><br>
-        Score: <select name="score" required>
-            <option value="Excellent">Excellent</option>
-            <option value="Good">Good</option>
-            <option value="Fair">Fair</option>
-            <option value="Poor">Poor</option>
-        </select><br>
-        Remark: <input type="text" name="remark" required><br>
-        <button type="submit">Submit Review</button>
-    </form>
+<!-- Form to submit a review -->
+<h2>Submit a Review</h2>
+<form action="/submit_review" method="post">
+    Item ID: <input type="number" name="itemID" required><br>
+    Score: <select name="score" required>
+        <option value="Excellent">Excellent</option>
+        <option value="Good">Good</option>
+        <option value="Fair">Fair</option>
+        <option value="Poor">Poor</option>
+    </select><br>
+    Remark: <input type="text" name="remark" required><br>
+    <button type="submit">Submit Review</button>
+</form>
+	{% if request.args.get('review_success') == 'True' %}
+    <div style="color: green;">Review has been Added!</div>
+    {% endif %}
+	
+	{% if review_error %}
+	<div style="color: red;">{{ review_error }}</div>
+	{% endif %}
+
 </body>
 </html>

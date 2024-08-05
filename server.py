@@ -6,7 +6,7 @@
 #pip install bcrypt 
 
 from datetime import date
-from flask import Flask, request, render_template, redirect, render_template_string
+from flask import Flask, request, render_template, redirect, render_template_string, make_response
 import mysql.connector
 from mysql.connector import Error
 import bcrypt
@@ -43,7 +43,9 @@ def login():
         cursor.execute('SELECT password FROM Users WHERE username = %s', (username,))
         record = cursor.fetchone()
         if record and bcrypt.checkpw(password.encode(), record[0].encode()):
-            return render_template('userdash.html')
+            response = make_response(redirect('/dashboard'))
+            response.set_cookie('username', username)
+            return response
         else:
             error = "Incorrect login, please check your login info and try again!"
             return render_template('signin.html', error=error)
@@ -99,31 +101,36 @@ def register_user():
     finally:
         cursor.close()
         conn.close()
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('userdash.html')
+        
 @app.route('/insert_item', methods=['POST'])
 def insert_item():
     title = request.form['title']
     description = request.form['description']
     categories = request.form['categories']
     price = request.form['price']
-    username = request.cookies.get('username')  # Assuming username is stored in cookies
+    username = request.cookies.get('username')  # Ensure the username is being fetched correctly.
     today = date.today()
 
     conn = db_connection()
     cursor = conn.cursor()
-    # Check the number of items posted today
     cursor.execute("SELECT COUNT(*) FROM Items WHERE username = %s AND datePosted = %s", (username, today))
-    count = cursor.fetchone()[0]
-    if count >= 2:
-        return "Limit reached: You can only post 2 items per day."
-
+    item_count = cursor.fetchone()[0]
+    
+    if item_count >= 2:
+        return render_template('userdash.html', item_error="Limit reached: You can only post 2 items per day.")
+    
     try:
-        cursor.execute("INSERT INTO Items (title, description, categories, price, username, datePosted) VALUES (%s, %s, %s, %s, %s, %s)",
-                       (title, description, categories, float(price), username, today))
+        cursor.execute("INSERT INTO Items (username, title, description, categories, price, datePosted) VALUES (%s, %s, %s, %s, %s, %s)", 
+                       (username, title, description, categories, price, today))
         conn.commit()
-        return "Item inserted successfully!"
+        return redirect('/dashboard?success=True')
     except Error as e:
         print(e)
-        return "Error occurred"
+        return render_template('userdash.html', item_error=str(e))
     finally:
         cursor.close()
         conn.close()
@@ -142,40 +149,41 @@ def submit_review():
     itemID = request.form['itemID']
     score = request.form['score']
     remark = request.form['remark']
-    username = request.cookies.get('username')  # Assuming username is stored in cookies
+    username = request.cookies.get('username')
     today = date.today()
 
     conn = db_connection()
     cursor = conn.cursor()
 
-    # Check if the user owns the item
+    # Check ownership
     cursor.execute("SELECT username FROM Items WHERE itemID = %s", (itemID,))
     owner = cursor.fetchone()
-    if owner[0] == username:
-        return "You cannot review your own items."
+    if owner and owner[0] == username:
+        return render_template('userdash.html', review_error="You cannot review your own items.")
 
-    # Check the number of reviews today
+    # Check daily limit
     cursor.execute("SELECT COUNT(*) FROM Reviews WHERE username = %s AND reviewDate = %s", (username, today))
     count = cursor.fetchone()[0]
     if count >= 3:
-        return "Limit reached: You can only submit 3 reviews per day."
+        return render_template('userdash.html', review_error="Limit reached: You can only submit 3 reviews per day.")
 
-    # Check if the user has already reviewed this item
+    # Check previous review
     cursor.execute("SELECT * FROM Reviews WHERE itemID = %s AND username = %s", (itemID, username))
     if cursor.fetchone():
-        return "You have already reviewed this item."
+        return render_template('userdash.html', review_error="You have already reviewed this item.")
 
     try:
         cursor.execute("INSERT INTO Reviews (itemID, username, score, remark, reviewDate) VALUES (%s, %s, %s, %s, %s)",
                        (itemID, username, score, remark, today))
         conn.commit()
-        return "Review submitted successfully!"
+        return redirect('/dashboard?review_success=True')
     except Error as e:
         print(e)
-        return "Error occurred"
+        return render_template('userdash.html', review_error="Error occurred during the review process.")
     finally:
         cursor.close()
         conn.close()
+
 
 #function to validate user input
 def validate_input(username, password, email):
