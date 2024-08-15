@@ -14,6 +14,6 @@ Then make sure to use the newly created user information at the top of the serve
             user='devuser', #REPLACE THIS WITH YOUR NEWLY CREATED USERS INFORMATION
             password='liability' #REPLACE THIS WITH YOUR NEWLY CREATED USERS INFORMATION
         )
+PHASE 1 DEMO: https://www.youtube.com/watch?v=9c8RjTPLesw
 
-
-YOUTUBE VIDEO DEMONSTRATION: https://www.youtube.com/watch?v=9c8RjTPLesw
+PHASE 2 DEMO: https://www.youtube.com/watch?v=AzV-NQbLbBk
