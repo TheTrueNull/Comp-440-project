@@ -148,7 +148,7 @@ def search_items():
 def all_reviews():
     conn = db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT r.reviewID, r.itemID, r.username, r.reviewDate, r.score, r.remark FROM Reviews r")
+    cursor.execute("SELECT r.reviewID, r.itemID, r.username, r.reviewDate, r.score, r.remark, t.title, t.categories FROM Reviews r, Items t where r.itemID = t.itemID")
     reviews = cursor.fetchall()
     return render_template('query_results.html', reviews=reviews)
 
