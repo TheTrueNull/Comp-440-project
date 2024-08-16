@@ -144,6 +144,110 @@ def search_items():
     items = cursor.fetchall()
     return render_template('items.html', items=items)  # Assuming you have an items.html to display results
 
+@app.route('/all_reviews', methods=['GET'])
+def all_reviews():
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT r.reviewID, r.itemID, r.username, r.reviewDate, r.score, r.remark FROM Reviews r")
+    reviews = cursor.fetchall()
+    return render_template('query_results.html', reviews=reviews)
+
+@app.route('/query1', methods=['GET'])
+def query1():
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT categories, MAX(price) AS MaxPrice, title, description FROM Items GROUP BY categories")
+    items = cursor.fetchall()
+    return render_template('query_results.html', items=items)
+
+@app.route('/query2', methods=['GET'])
+def query2():
+    categoryX = request.args.get('categoryX')
+    categoryY = request.args.get('categoryY')
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT DISTINCT i1.username
+        FROM Items i1, Items i2
+        WHERE i1.username = i2.username 
+        AND i1.datePosted = i2.datePosted
+        AND i1.categories = %s
+        AND i2.categories = %s
+        AND i1.itemID != i2.itemID
+    """, (categoryX, categoryY))
+    users = cursor.fetchall()
+    return render_template('query_results.html', users=users)
+
+@app.route('/query3', methods=['GET'])
+def query3():
+    username = request.args.get('username')
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT DISTINCT i.itemID, i.title
+        FROM Items i
+        JOIN Reviews r ON i.itemID = r.itemID
+        WHERE i.username = %s
+        AND EXISTS (
+            SELECT 1
+            FROM Reviews r2
+            WHERE r2.itemID = i.itemID 
+            AND r2.score IN ('Excellent', 'Good')
+        )
+    """, (username,))
+    items = cursor.fetchall()
+    return render_template('query_results.html', items=items)
+
+@app.route('/query4', methods=['GET'])
+def query4():
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT username, COUNT(*) AS Countno
+        FROM Items
+        WHERE datePosted = '2024-07-04'
+        GROUP BY username
+        HAVING COUNT(*) = (
+            SELECT MAX(Countno) FROM (
+                SELECT COUNT(*) AS Countno
+                FROM Items
+                WHERE datePosted = '2024-07-04'
+                GROUP BY username
+            ) AS Counts
+        )
+    """)
+    users = cursor.fetchall()
+    return render_template('query_results.html', users=users)
+
+@app.route('/query5', methods=['GET'])
+def query5():
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT DISTINCT username
+        FROM Reviews
+        WHERE score = 'Poor'
+        AND username NOT IN (
+            SELECT username FROM Reviews WHERE score <> 'Poor'
+        )
+    """)
+    users = cursor.fetchall()
+    return render_template('query_results.html', users=users)
+
+@app.route('/query6', methods=['GET'])
+def query6():
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT DISTINCT username
+        FROM Items i
+        WHERE NOT EXISTS (
+            SELECT 1 FROM Reviews r WHERE r.itemID = i.itemID AND r.score = 'Poor'
+        )
+    """)
+    users = cursor.fetchall()
+    return render_template('query_results.html', users=users)
+
 @app.route('/submit_review', methods=['POST'])
 def submit_review():
     itemID = request.form['itemID']

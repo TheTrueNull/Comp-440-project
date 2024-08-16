@@ -52,6 +52,46 @@
 	{% if review_error %}
 	<div style="color: red;">{{ review_error }}</div>
 	{% endif %}
+	
+<h2>Phase 3 Queries</h2>
+	<!-- Display all reviews -->
+	<form action="/all_reviews" method="get">
+		<button type="submit">Display All Reviews</button>
+	</form>
+
+    <!-- 1. Most Expensive Items by Category -->
+    <form action="/query1" method="get">
+        <button type="submit">Most Expensive Items by Category</button>
+    </form>
+
+    <!-- 2. Users Posting Two Items on Same Day in Different Categories -->
+    <form action="/query2" method="get">
+        Category X: <input type="text" name="categoryX" required>
+        Category Y: <input type="text" name="categoryY" required>
+        <button type="submit">Find Users</button>
+    </form>
+
+    <!-- 3. Items by User with Only Good or Excellent Reviews -->
+    <form action="/query3" method="get">
+        Username: <input type="text" name="username" required>
+        <button type="submit">Items with Good or Excellent Reviews</button>
+    </form>
+
+    <!-- 4. Most Items Posted on 7/4/2024 -->
+    <form action="/query4" method="get">
+        <button type="submit">Most Items Posted on 7/4/2024</button>
+    </form>
+
+    <!-- 5. Users Who Posted Only Poor Reviews -->
+    <form action="/query5" method="get">
+        <button type="submit">Users with Only Poor Reviews</button>
+    </form>
+
+    <!-- 6. Users with No Poor Reviews on Items -->
+    <form action="/query6" method="get">
+        <button type="submit">Users with No Poor Reviews</button>
+    </form>
+	
 
 </body>
 </html>
