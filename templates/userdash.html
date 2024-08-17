@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
+
 </head>
 <body>
+	
     <h1>User Dashboard</h1>
 
     <!-- Form to insert an item -->
@@ -54,6 +56,10 @@
 	{% endif %}
 	
 <h2>Phase 3 Queries</h2>
+		<!-- Display all Items -->
+	<form action="/all_items" method="get">
+		<button type="submit">Display All Items</button>
+	</form>
 	<!-- Display all reviews -->
 	<form action="/all_reviews" method="get">
 		<button type="submit">Display All Reviews</button>
@@ -92,6 +98,6 @@
         <button type="submit">Users with No Poor Reviews</button>
     </form>
 	
-
+	<a href="/logout" class="logout-button">Logout</a>
 </body>
 </html>

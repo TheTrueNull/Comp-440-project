@@ -105,6 +105,13 @@ def register_user():
 @app.route('/dashboard')
 def dashboard():
     return render_template('userdash.html')
+
+@app.route('/logout', methods=['GET']) 
+def logout():
+    response = make_response(redirect('/'))
+    response.set_cookie('username', '', expires=0)
+    return response
+
         
 @app.route('/insert_item', methods=['POST'])
 def insert_item():
@@ -144,11 +151,19 @@ def search_items():
     items = cursor.fetchall()
     return render_template('items.html', items=items)  # Assuming you have an items.html to display results
 
+@app.route('/all_items', methods=['GET'])
+def all_items():
+    conn = db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Items")
+    items = cursor.fetchall()
+    return render_template('query_results.html', items=items)
+
 @app.route('/all_reviews', methods=['GET'])
 def all_reviews():
     conn = db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT r.reviewID, r.itemID, r.username, r.reviewDate, r.score, r.remark, t.title, t.categories FROM Reviews r, Items t where r.itemID = t.itemID")
+    cursor.execute("SELECT r.reviewID, r.itemID, t.username, r.username, r.reviewDate, r.score, r.remark, t.title, t.categories FROM Reviews r, Items t where r.itemID = t.itemID")
     reviews = cursor.fetchall()
     return render_template('query_results.html', reviews=reviews)
 
@@ -156,7 +171,13 @@ def all_reviews():
 def query1():
     conn = db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT categories, MAX(price) AS MaxPrice, title, description FROM Items GROUP BY categories")
+    # cursor.execute("SELECT categories, MAX(price) AS MaxPrice, title, description FROM Items GROUP BY categories") 
+    # some strange issue with group by in this query: running this line in mysql fixes it SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY','')); 
+    cursor.execute("""SELECT i.*, m.MaxPrice
+    FROM Items i
+    JOIN (SELECT categories, MAX(price) AS MaxPrice 
+    FROM Items
+    GROUP BY categories) m ON i.categories = m.categories AND i.price = m.MaxPrice;""") #this workaround seems to work but was much more difficult to implement and may cause unforeseen issues
     items = cursor.fetchall()
     return render_template('query_results.html', items=items)
 
@@ -184,7 +205,7 @@ def query3():
     conn = db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT DISTINCT i.itemID, i.title
+        SELECT DISTINCT *
         FROM Items i
         JOIN Reviews r ON i.itemID = r.itemID
         WHERE i.username = %s
@@ -224,12 +245,11 @@ def query5():
     conn = db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT DISTINCT username
-        FROM Reviews
-        WHERE score = 'Poor'
-        AND username NOT IN (
-            SELECT username FROM Reviews WHERE score <> 'Poor'
-        )
+    SELECT DISTINCT i.username
+    FROM Items i
+    JOIN Reviews r ON i.itemID = r.itemID
+    GROUP BY i.username
+    HAVING COUNT(*) = COUNT(CASE WHEN r.score = 'Poor' THEN 1 END);
     """)
     users = cursor.fetchall()
     return render_template('query_results.html', users=users)

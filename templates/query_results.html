@@ -7,7 +7,8 @@
 </head>
 <body>
     <h1>Query Results</h1>
-    <!-- Handle Display of Item Data -->
+	<!-- Handle Display of Item Data -->
+<!--    
     {% if items %}
         <h2>Items</h2>
         <table border="1">
@@ -29,7 +30,7 @@
             {% endfor %}
         </table>
     {% endif %}
-
+-->
     <!-- Handle Display of User Data -->
     {% if users %}
         <h2>Users</h2>
@@ -52,7 +53,8 @@
 			<tr>
 				<th>Review ID</th>
 				<th>Item ID</th>
-				<th>Username</th>
+				<th>Poster</th>
+				<th>Reviewer</th>
 				<th>Review Date</th>
 				<th>Score</th>
 				<th>Remark</th>
@@ -69,6 +71,34 @@
 				<td>{{ review[5] }}</td>
 				<td>{{ review[6] }}</td>
 				<td>{{ review[7] }}</td>
+				<td>{{ review[8] }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	{% endif %}
+	
+	
+	{% if items %}
+		<h2>Items</h2>
+		<table border="1">
+			<tr>
+				<th>Item ID</th>
+				<th>Username</th>
+				<th>Item Title</th>
+				<th>Description</th>
+				<th>Date Posted</th>
+				<th>Price</th>
+				<th>Item Category</th>
+			</tr>
+			{% for item in items %}
+			<tr>
+				<td>{{ item[0] }}</td>
+				<td>{{ item[1] }}</td>
+				<td>{{ item[2] }}</td>
+				<td>{{ item[3] }}</td>
+				<td>{{ item[4] }}</td>
+				<td>{{ item[5] }}</td>
+				<td>{{ item[6] }}</td>
 			</tr>
 			{% endfor %}
 		</table>
