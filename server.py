@@ -205,16 +205,16 @@ def query3():
     conn = db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT DISTINCT *
-        FROM Items i
-        JOIN Reviews r ON i.itemID = r.itemID
-        WHERE i.username = %s
-        AND EXISTS (
-            SELECT 1
-            FROM Reviews r2
-            WHERE r2.itemID = i.itemID 
-            AND r2.score IN ('Excellent', 'Good')
-        )
+    SELECT DISTINCT i.*
+    FROM Items i
+    JOIN Reviews r ON i.itemID = r.itemID
+    WHERE i.username = %s
+    AND NOT EXISTS (
+    SELECT 1
+    FROM Reviews r2
+    WHERE r2.itemID = i.itemID
+    AND r2.score NOT IN ('Excellent', 'Good')
+);
     """, (username,))
     items = cursor.fetchall()
     return render_template('query_results.html', items=items)
@@ -259,11 +259,14 @@ def query6():
     conn = db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT DISTINCT username
-        FROM Items i
-        WHERE NOT EXISTS (
-            SELECT 1 FROM Reviews r WHERE r.itemID = i.itemID AND r.score = 'Poor'
-        )
+     SELECT DISTINCT i.username
+    FROM Items i
+    WHERE i.username NOT IN (
+    SELECT r.username
+    FROM Reviews r
+    JOIN Items it ON r.itemID = it.itemID
+    WHERE r.score = 'Poor'
+);
     """)
     users = cursor.fetchall()
     return render_template('query_results.html', users=users)
